@@ -1,26 +1,27 @@
 # Product Backlog: Agentic Data Mesh
 
 ## Project Goal
-Create an AI-driven data partner that ingests fragmented manufacturing spreadsheets and allows for conversational, multi-source querying with high transparency and "human-in-the-loop" validation.
+Create a lightweight, AI-driven data partner that ingests fragmented manufacturing spreadsheets and allows for conversational querying, real-time visualization, and "human-in-the-loop" validation, hosted on GCP.
 
 ---
 
-### Epic 1: Foundation & Data Ingestion
-| ID | Title | User Story | Priority |
-| :--- | :--- | :--- | :--- |
-| ADM-001 | Multi-file Ingestor | As a user, I want to upload 10-20 .xlsx/.csv files so the system can access all raw data. | High |
-| ADM-002 | Metadata Profiler | As a user, I want the system to extract headers, data types, and sample rows automatically. | High |
-| ADM-003 | Synthetic Data Setup | As a developer, I need manufacturing datasets (Inventory, Production, Quality) to test logic. | Medium |
+### Epic 1: Cloud Foundation & Ingestion
+| ID | Title | User Story | Priority | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| ADM-001 | Lean GCP Setup | As a dev, I need to configure a 1GB RAM VM in us-east1-b with port 8080 open for Chainlit. | High | To Do |
+| ADM-002 | Multi-file Ingestor | As a user, I want to scan a /data folder for .xlsx/.csv files without overloading memory. | High | To Do |
+| ADM-003 | Metadata Profiler | As an agent, I need a JSON summary (headers/types) to understand the mesh structure. | High | To Do |
 
-### Epic 2: Intelligent Schema Mapping (The Mesh)
-| ID | Title | User Story | Priority |
-| :--- | :--- | :--- | :--- |
-| ADM-004 | Entity Linker | As a user, I want the AI to suggest "Connecting Points" (IDs/Keys) between different files. | High |
-| ADM-005 | Discrepancy Detector | As a user, I want the AI to flag when columns like 'Part_No' and 'Part_ID' represent the same thing. | Medium |
+### Epic 2: Agentic Intelligence (Gemini 2.5 Flash)
+| ID | Title | User Story | Priority | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| ADM-004 | Vertex AI Integration | As a dev, I want to use Gemini 2.5 Flash via SDK to offload heavy reasoning from the VM. | High | To Do |
+| ADM-005 | Function Calling Logic | As an agent, I want to "call" Python tools to slice data only when needed (Lazy Loading). | High | To Do |
+| ADM-006 | The "SK" Clarification Loop | As an agent, I must pause and ask SK for confirmation on ambiguous join keys. | High | To Do |
 
-### Epic 3: Conversational Logic & Reasoning
-| ID | Title | User Story | Priority |
-| :--- | :--- | :--- | :--- |
-| ADM-006 | Query Parser | As a user, I want to ask questions in plain English (e.g., "How much was spent on X?"). | High |
-| ADM-007 | Clarification Loop | As a user, I want the AI to ask me questions if data is ambiguous rather than guessing. | High |
-| ADM-008 | Caveat Reporting | As a user, I want the AI to list the assumptions it made to arrive at a cost or metric. | Medium |
+### Epic 3: UI & Visual Analytics
+| ID | Title | User Story | Priority | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| ADM-007 | Chainlit Chat Interface | As a user, I want a clean chat UI to interact with my data mesh. | High | To Do |
+| ADM-008 | Inline Plotly Charts | As a user, I want to see trend lines and defect charts rendered directly in the chat. | Medium | To Do |
+| ADM-009 | Step-by-Step Reasoning | As a user, I want to see the "Agent's Thoughts" as it processes multiple files. | Medium | To Do |

@@ -1,0 +1,5 @@
+Date,Line_ID,Component_Code,Qty_Produced,Qty_Defect
+2026-04-15,Line_A,P-101,100,2
+2026-04-15,Line_B,P-102,500,15
+2026-04-16,Line_A,P-101,95,1
+2026-04-16,Line_C,P-104,200,8

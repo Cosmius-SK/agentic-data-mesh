@@ -1,25 +1,31 @@
-# Sprint Plan: Sprint 1 (Foundations)
+# Sprint Plan: Sprint 1 (The Live Mesh)
 
-**Goal:** Establish the data ingestion pipeline and initial "Schema Discovery" using synthetic manufacturing data.
+**Goal:** Deploy a functional Chainlit UI on GCP using Gemini 2.5 Flash to map synthetic data and render one dynamic trend chart.
 
 ---
 
 ### 🎯 Sprint Goal
-Successfully ingest 3-5 related manufacturing spreadsheets and have the AI identify at least one primary key relationship between them.
+Successfully host the app on GCP, link 3 synthetic CSVs using Gemini's reasoning, and render a Plotly chart in response to a natural language query.
 
 ### 📋 Sprint Backlog
-1. **ADM-001: Multi-file Ingestor**
-   - Script to scan a local `/data` folder.
-   - Load `.xlsx` and `.csv` using Pandas.
-2. **ADM-003: Synthetic Data Setup**
-   - Source 3 files: `Suppliers.xlsx`, `Production_Logs.csv`, `Inventory.xlsx`.
-   - Ensure overlapping fields (e.g., `Part_ID`) exist for testing.
-3. **ADM-002: Metadata Profiler**
-   - Generate a JSON summary for each file (Columns, Non-null counts, Sample values).
-4. **ADM-004: Entity Linker (PoC)**
-   - Prompt AI to suggest which columns might be used for joins/vlookups.
+
+#### Phase 1: Infrastructure (The "G" Setup)
+- [ ] Configure VM (us-east1-b) with Python 3.10+ and a virtual environment.
+- [ ] Set up GCP Firewall rules for Port 8080.
+- [ ] Install lean dependencies: `chainlit`, `pandas`, `plotly`, `google-cloud-aiplatform`.
+
+#### Phase 2: The Agentic Engine
+- [ ] Implement **ADM-004**: Connect Gemini 2.5 Flash via Vertex AI.
+- [ ] Create **Tool-Use** script: Functions for `list_files()` and `read_sample_rows()`.
+- [ ] Test **ADM-006**: Prompt the agent to find a link between `Part_ID` and `Component_Code` and ask for user validation.
+
+#### Phase 3: UI & Visualization
+- [ ] Build the **Chainlit** wrapper (`app.py`).
+- [ ] Implement a specific logic to trigger a **Plotly** chart when the user asks for a "trend" or "summary."
+- [ ] Use `cl.Step` to display metadata profiling results in the UI.
 
 ### 🛠️ Definition of Done (DoD)
-- [ ] Python script runs without errors for multiple file types.
-- [ ] AI correctly identifies the link between `Part_ID` across at least two files.
-- [ ] Documentation updated in GitHub.
+- [ ] App is reachable via External IP:8080.
+- [ ] Agent correctly identifies relationships in the 3 synthetic CSVs.
+- [ ] User can ask "Show me the production trend" and see a Plotly graph.
+- [ ] Code is pushed to `main` branch.

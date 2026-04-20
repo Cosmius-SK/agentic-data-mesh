@@ -7,7 +7,7 @@ from vertexai.generative_models import GenerativeModel, Tool, FunctionDeclaratio
 
 # 1. Initialize Vertex AI
 PROJECT_ID = "your-gcp-project" # Update this!
-aiplatform.init(project=PROJECT_ID, location="us-central1")
+aiplatform.init(project=aisk2026, location="us-central1")
 
 # 2. Define Tools (Functions Gemini can call)
 def get_mesh_schema():

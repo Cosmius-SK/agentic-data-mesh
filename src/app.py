@@ -15,7 +15,7 @@ if not API_KEY:
 
 # Initialize the NEW client
 client = genai.Client(api_key=API_KEY)
-MODEL_ID = "gemini-1.5-flash"
+MODEL_ID = "gemini-1.5-flash-latest"
 
 # 2. Define Pulse's Tools
 def get_mesh_schema():

@@ -1,24 +1,6 @@
-# Python bytecode
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Environments
-.venv/
-venv/
-ENV/
-
-# Local Data (Don't push your raw spreadsheets to Git)
-data/
-*.csv
-*.xlsx
-
-# Secrets & Config
 .env
-.cl/
-chainlit.md
-.gcp_credentials.json
-
-# IDEs
-.vscode/
-.idea/
+__pycache__/
+*.pyc
+.venv/
+# Optional: Ignore maintenance reports if you want a clean repo
+# pulse_report_*.md

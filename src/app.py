@@ -11,17 +11,15 @@ load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not API_KEY:
-    raise ValueError("GEMINI_API_KEY not found. Check your .env file.")
+    raise ValueError("GEMINI_API_KEY not found in .env file!")
 
+# Initialize the NEW client
 client = genai.Client(api_key=API_KEY)
-MODEL_ID = "gemini-1.5-flash-latest"
+MODEL_ID = "gemini-1.5-flash"
 
 # 2. Define Pulse's Tools
-
 def get_mesh_schema():
-    """
-    REQUIRED: Call this first to see which CSV files exist and their columns.
-    """
+    """REQUIRED: Call this first to see which CSV files exist and their columns."""
     schemas = {}
     data_path = "data"
     if not os.path.exists(data_path):
@@ -38,19 +36,13 @@ def get_mesh_schema():
     return schemas
 
 def read_data_sample(filename: str):
-    """
-    REQUIRED: Call this to read actual data rows to find correlations or spikes.
-    Args:
-        filename (str): The name of the file to read.
-    """
+    """REQUIRED: Call this to read actual data rows to find correlations or spikes."""
     data_path = "data"
     path = os.path.join(data_path, filename)
     if not os.path.exists(path):
         return f"Error: {filename} not found."
-
     try:
         df = pd.read_csv(path) if filename.endswith(".csv") else pd.read_excel(path)
-        # Convert to dict for the new SDK's tool output
         return df.tail(15).to_dict(orient="records")
     except Exception as e:
         return f"Error reading {filename}: {str(e)}"
@@ -58,37 +50,22 @@ def read_data_sample(filename: str):
 # 3. System Instructions
 SYSTEM_PROMPT = (
     "You are Pulse, an autonomous Manufacturing Intelligence Agent. "
-    "You have tools to access a data mesh. You MUST follow this protocol:\n"
-    "1. Always use 'get_mesh_schema' first to see what data is available.\n"
-    "2. Always use 'read_data_sample' to look at specific rows for troubleshooting.\n"
-    "3. NEVER say you cannot access data. Use your tools.\n"
-    "4. Correlate insights across multiple files (e.g., Temperature vs. Vibration)."
+    "Use your tools to access the data mesh. ALWAYS call get_mesh_schema first. "
+    "NEVER say you cannot access data."
 )
 
 # 4. Chainlit UI Logic
-
 @cl.on_chat_start
 async def start():
-    # Pass function references to the session
+    # Pass function references (the actual functions) to the session
     cl.user_session.set("tools", [get_mesh_schema, read_data_sample])
-    await cl.Message(content="### ⚡ Pulse (v2.1) Secured & Online\nEnvironment variables loaded. Ready for correlation analysis.").send()
+    await cl.Message(content="### ⚡ Pulse (v2.2) Clean Boot\nUsing NEW SDK and secured .env key.").send()
 
 @cl.on_message
 async def main(message: cl.Message):
-    # Native Trend shortcut
-    if "trend" in message.content.lower():
-        try:
-            df = pd.read_csv("data/daily_production.csv")
-            fig = px.line(df, x="Date", y="Qty_Produced", title="Pulse: Production Snapshot", template="plotly_dark")
-            await cl.Message(content="Visualizing current production trend...", elements=[cl.Plotly(name="chart", figure=fig)]).send()
-            return
-        except Exception as e:
-            await cl.Message(content=f"Trend error: {e}").send()
-            return
-
-    # Agentic Reasoning via Tool-calling
     try:
         tools = cl.user_session.get("tools")
+        # USE THE NEW CLIENT CALL (client.models.generate_content)
         response = client.models.generate_content(
             model=MODEL_ID,
             contents=message.content,
@@ -100,4 +77,4 @@ async def main(message: cl.Message):
         )
         await cl.Message(content=response.text).send()
     except Exception as e:
-        await cl.Message(content=f"Pulse reasoning failed: {str(e)}").send()
+        await cl.Message(content=f"Pulse failed: {str(e)}").send()

@@ -1,4 +1,3 @@
-cat << 'EOF' > src/app.py
 import chainlit as cl
 import pandas as pd
 import plotly.express as px
@@ -25,7 +24,7 @@ def get_mesh_schema():
 
 # Setup the Model with Tools
 model = genai.GenerativeModel(
-    model_name='gemini-1.5-flash',
+    model_name='gemini-2.5-flash',
     tools=[get_mesh_schema] 
 )
 
@@ -47,4 +46,3 @@ async def main(message: cl.Message):
 
     response = chat.send_message(message.content)
     await cl.Message(content=response.text).send()
-EOF

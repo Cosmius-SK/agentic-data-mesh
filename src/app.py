@@ -6,8 +6,8 @@ from google.cloud import aiplatform
 from vertexai.generative_models import GenerativeModel, Tool, FunctionDeclaration
 
 # 1. Initialize Vertex AI
-PROJECT_ID = "your-gcp-project" # Update this!
-aiplatform.init(project=aisk2026, location="us-central1")
+PROJECT_ID = "aisk2026" # Update this!
+aiplatform.init(project=PROJECT_ID, location="us-central1")
 
 # 2. Define Tools (Functions Gemini can call)
 def get_mesh_schema():

@@ -35,7 +35,7 @@ class DataChatAgent:
     def __init__(self, store: DataStore):
         self.store = store
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-preview")
+        self.model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
         self._tools = [
             types.Tool(function_declarations=[
                 types.FunctionDeclaration(

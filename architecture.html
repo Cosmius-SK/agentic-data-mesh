@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse — Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#07070f;
+  --surface:#0f0f1a;
+  --surface2:#161625;
+  --border:#1e1e35;
+  --border-h:#3a3a60;
+
+  --violet:#a78bfa;
+  --violet-d:#6d28d9;
+  --violet-g:rgba(167,139,250,.18);
+
+  --blue:#60a5fa;
+  --blue-d:#2563eb;
+  --blue-g:rgba(96,165,250,.15);
+
+  --emerald:#34d399;
+  --emerald-d:#059669;
+  --emerald-g:rgba(52,211,153,.15);
+
+  --amber:#fbbf24;
+  --amber-d:#b45309;
+  --amber-g:rgba(251,191,36,.15);
+
+  --rose:#fb7185;
+  --text:#e2e8f0;
+  --text-d:#94a3b8;
+  --text-m:#4b5563;
+
+  --r:12px;
+  --r-sm:8px;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',system-ui,sans-serif;
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ---- particle bg ---- */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%,rgba(167,139,250,.25),transparent),
+    radial-gradient(1px 1px at 78% 8% ,rgba(96,165,250,.2),transparent),
+    radial-gradient(1px 1px at 55% 75%,rgba(52,211,153,.18),transparent),
+    radial-gradient(1px 1px at 90% 55%,rgba(251,191,36,.15),transparent),
+    radial-gradient(2px 2px at 35% 45%,rgba(167,139,250,.1),transparent),
+    radial-gradient(1px 1px at 5%  88%,rgba(251,113,133,.15),transparent);
+  pointer-events:none;z-index:0;
+}
+
+.wrap{
+  position:relative;z-index:1;
+  max-width:1460px;
+  margin:0 auto;
+  padding:3rem 1.75rem;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header{
+  text-align:center;
+  margin-bottom:3.5rem;
+}
+
+.badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--violet-g);
+  border:1px solid var(--violet-d);
+  border-radius:999px;
+  padding:.3rem 1rem;
+  font-size:.7rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--violet);
+  margin-bottom:1.75rem;
+}
+
+.header h1{
+  font-size:clamp(2rem,5vw,3.75rem);
+  font-weight:700;line-height:1.1;
+  background:linear-gradient(130deg,#e2e8f0 0%,#a78bfa 45%,#60a5fa 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:.85rem;
+}
+
+.header-sub{
+  color:var(--text-d);
+  font-size:1.05rem;
+  max-width:580px;
+  margin:0 auto 2rem;
+  line-height:1.65;
+}
+
+.cta-row{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;}
+
+.btn{
+  display:inline-flex;align-items:center;gap:.6rem;
+  border-radius:10px;
+  padding:.75rem 1.75rem;
+  font-size:.875rem;font-weight:600;
+  cursor:pointer;transition:all .2s;
+  border:1px solid;
+  letter-spacing:.02em;
+}
+
+.btn-primary{
+  background:linear-gradient(135deg,var(--violet-d),#4c1d95);
+  border-color:var(--violet);
+  color:#fff;
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg,#7c3aed,#5b21b6);
+  box-shadow:0 0 28px var(--violet-g);
+  transform:translateY(-1px);
+}
+.btn-primary.playing{
+  background:linear-gradient(135deg,#dc2626,#991b1b);
+  border-color:#f87171;
+}
+
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+#status-bar{
+  text-align:center;
+  min-height:2.2rem;
+  margin-bottom:1rem;
+  font-size:.82rem;
+  color:var(--violet);
+  font-weight:500;
+  transition:all .3s;
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+}
+
+.status-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--violet);
+  display:inline-block;
+  flex-shrink:0;
+  animation:pulse-dot 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.6);opacity:.6}
+}
+
+/* ============================================================
+   ARCHITECTURE DIAGRAM
+   ============================================================ */
+.arch-diagram{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1.5rem;
+  margin-bottom:1rem;
+}
+
+/* SVG overlay */
+#conn-svg{
+  position:absolute;
+  top:0;left:0;
+  pointer-events:none;
+  z-index:5;
+  overflow:visible;
+}
+
+/* ---- Column ---- */
+.arch-col{
+  display:flex;flex-direction:column;
+  gap:1rem;
+  position:relative;
+  z-index:6;
+}
+
+.col-label{
+  font-size:.68rem;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  padding:.4rem .75rem;
+  border-radius:6px;
+  text-align:center;
+}
+
+.col-ui    .col-label{color:var(--blue);   background:var(--blue-g);   border:1px solid var(--blue-d);}
+.col-brain .col-label{color:var(--violet); background:var(--violet-g); border:1px solid var(--violet-d);}
+.col-file  .col-label{color:var(--emerald);background:var(--emerald-g);border:1px solid var(--emerald-d);}
+.col-exec  .col-label{color:var(--amber);  background:var(--amber-g);  border:1px solid var(--amber-d);}
+
+/* ---- Card ---- */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1.25rem;
+  transition:all .25s;
+  position:relative;
+  overflow:hidden;
+  cursor:default;
+}
+
+.card::before{
+  content:'';
+  position:absolute;inset:0;
+  opacity:0;
+  transition:opacity .25s;
+  border-radius:inherit;
+  pointer-events:none;
+}
+
+.col-ui    .card::before{background:var(--blue-g);}
+.col-brain .card::before{background:var(--violet-g);}
+.col-file  .card::before{background:var(--emerald-g);}
+.col-exec  .card::before{background:var(--amber-g);}
+
+.card:hover{
+  border-color:var(--border-h);
+  transform:translateY(-2px);
+  box-shadow:0 10px 32px rgba(0,0,0,.5);
+}
+.card:hover::before{opacity:1;}
+
+/* Active (during animation) */
+.col-ui    .card.active{border-color:var(--blue);   box-shadow:0 0 0 2px var(--blue),   0 0 35px var(--blue-g);}
+.col-brain .card.active{border-color:var(--violet); box-shadow:0 0 0 2px var(--violet), 0 0 35px var(--violet-g);}
+.col-file  .card.active{border-color:var(--emerald);box-shadow:0 0 0 2px var(--emerald),0 0 35px var(--emerald-g);}
+.col-exec  .card.active{border-color:var(--amber);  box-shadow:0 0 0 2px var(--amber),  0 0 35px var(--amber-g);}
+
+.card.active::before{opacity:1;}
+.card.active{transform:translateY(-3px);}
+
+/* Card internals */
+.card-head{
+  display:flex;align-items:flex-start;gap:.75rem;
+  margin-bottom:.85rem;
+}
+
+.card-icon{
+  font-size:1.6rem;line-height:1;flex-shrink:0;
+  filter:drop-shadow(0 0 8px currentColor);
+}
+
+.card-name{
+  font-weight:600;font-size:.9rem;
+  color:var(--text);line-height:1.25;
+}
+
+.card-file{
+  font-family:var(--mono);
+  font-size:.68rem;color:var(--text-m);
+  margin-top:.15rem;
+}
+
+.card-features{
+  list-style:none;
+  display:flex;flex-direction:column;gap:.3rem;
+}
+.card-features li{
+  font-size:.78rem;color:var(--text-d);
+  padding-left:.9rem;
+  position:relative;line-height:1.45;
+}
+.card-features li::before{
+  content:'›';
+  position:absolute;left:0;
+  color:var(--text-m);
+}
+
+/* Format badges */
+.fmt-row{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.75rem;}
+.fmt{
+  font-family:var(--mono);font-size:.63rem;font-weight:700;
+  padding:.15rem .42rem;border-radius:4px;
+  letter-spacing:.04em;
+}
+.fmt-csv {background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25);}
+.fmt-xlsx{background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.25);}
+.fmt-pdf {background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);}
+.fmt-docx{background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.25);}
+.fmt-pptx{background:rgba(251,113,133,.12);color:#fb7185;border:1px solid rgba(251,113,133,.25);}
+
+/* Tool list */
+.tool-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.25rem;}
+.tool{
+  display:flex;align-items:center;gap:.5rem;
+  font-family:var(--mono);font-size:.7rem;
+  color:var(--violet);
+  background:rgba(109,40,217,.1);
+  border:1px solid rgba(109,40,217,.2);
+  border-radius:6px;
+  padding:.3rem .65rem;
+  transition:all .2s;
+}
+.tool:hover{background:rgba(109,40,217,.2);border-color:var(--violet);}
+.tool-n{
+  background:var(--violet-d);
+  color:#fff;
+  border-radius:50%;
+  width:16px;height:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-weight:700;flex-shrink:0;
+}
+
+/* ============================================================
+   QUERY JOURNEY
+   ============================================================ */
+.section{
+  margin-top:3.5rem;
+}
+
+.section-title{
+  font-size:.68rem;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:var(--violet);
+  margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:.75rem;
+}
+.section-title::after{
+  content:'';flex:1;
+  height:1px;
+  background:linear-gradient(to right,var(--violet-d),transparent);
+}
+
+.steps-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:.85rem;
+}
+
+.step{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:1rem;
+  transition:all .3s;
+  opacity:.45;
+  position:relative;
+}
+
+.step::after{
+  content:attr(data-n);
+  position:absolute;
+  top:-1px;right:-.5rem;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:4px;
+  font-family:var(--mono);
+  font-size:.6rem;font-weight:700;
+  color:var(--text-m);
+  padding:.1rem .35rem;
+  transition:all .3s;
+}
+
+.step.active{
+  opacity:1;
+  border-color:var(--violet);
+  background:var(--surface2);
+  box-shadow:0 0 22px var(--violet-g);
+}
+.step.active::after{color:var(--violet);border-color:var(--violet);}
+
+.step.done{
+  opacity:.75;
+  border-color:var(--emerald-d);
+}
+.step.done::after{color:var(--emerald);border-color:var(--emerald-d);}
+
+.step-tag{
+  font-size:.65rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-m);
+  margin-bottom:.45rem;
+}
+.step.active .step-tag{color:var(--violet);}
+.step.done   .step-tag{color:var(--emerald);}
+
+.step-title-text{
+  font-size:.82rem;font-weight:600;
+  color:var(--text);margin-bottom:.35rem;
+}
+
+.step-desc{
+  font-size:.73rem;color:var(--text-d);line-height:1.5;
+}
+
+.step-comp{
+  font-family:var(--mono);
+  font-size:.62rem;color:var(--text-m);
+  margin-top:.6rem;padding-top:.6rem;
+  border-top:1px solid var(--border);
+}
+
+/* ============================================================
+   TECH STACK
+   ============================================================ */
+.tech-box{
+  margin-top:3.5rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:2rem;
+}
+
+.tech-grid{
+  display:flex;flex-wrap:wrap;gap:.65rem;
+  margin-top:1.25rem;
+}
+
+.tb{
+  display:flex;align-items:center;gap:.5rem;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:.45rem .85rem;
+  font-size:.78rem;font-weight:500;
+  color:var(--text-d);
+  transition:all .2s;
+}
+.tb:hover{border-color:var(--border-h);color:var(--text);}
+.tb .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{
+  text-align:center;
+  margin-top:3rem;padding-top:2rem;
+  border-top:1px solid var(--border);
+  color:var(--text-m);
+  font-size:.78rem;
+  line-height:1.8;
+}
+footer a{color:var(--violet);text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:1100px){
+  .arch-diagram{grid-template-columns:repeat(2,1fr);}
+  .steps-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:640px){
+  .arch-diagram{grid-template-columns:1fr;}
+  .steps-grid{grid-template-columns:1fr;}
+  .wrap{padding:2rem 1rem;}
+}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border-h);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="header">
+  <div class="badge">&#128302; Pulse &mdash; System Architecture</div>
+  <h1>Single Agent.<br>Infinite Questions.</h1>
+  <p class="header-sub">
+    Pulse autonomously selects tools, writes &amp; executes pandas code,
+    and synthesises insights across every file you upload &mdash;
+    all in one conversational loop.
+  </p>
+  <div class="cta-row">
+    <button class="btn btn-primary" id="trace-btn" onclick="startTrace()">
+      <span id="btn-icon">&#9654;</span>
+      <span id="btn-label">Trace a Query</span>
+    </button>
+  </div>
+</header>
+
+<div id="status-bar"></div>
+
+<!-- ============================================================
+     ARCHITECTURE DIAGRAM
+     ============================================================ -->
+<div class="arch-diagram" id="arch-diagram">
+
+  <!-- SVG connection overlay -->
+  <svg id="conn-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr-v" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#a78bfa" opacity=".8"/></marker>
+      <marker id="arr-b" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#60a5fa" opacity=".8"/></marker>
+      <marker id="arr-e" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#34d399" opacity=".8"/></marker>
+      <marker id="arr-a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#fbbf24" opacity=".8"/></marker>
+    </defs>
+  </svg>
+
+  <!-- ---- Col 1: UI ---- -->
+  <div class="arch-col col-ui">
+    <div class="col-label">&#128187; UI Layer</div>
+
+    <div class="card" id="c-chainlit">
+      <div class="card-head">
+        <div class="card-icon">&#11041;</div>
+        <div>
+          <div class="card-name">Chainlit 2.x</div>
+          <div class="card-file">app.py</div>
+        </div>
+      </div>
+      <ul class="card-features">
+        <li>Streaming chat interface</li>
+        <li>File drag &amp; drop (up to 500 MB)</li>
+        <li>Inline Plotly chart rendering</li>
+        <li>Dark theme + custom CSS</li>
+        <li>Live thinking steps display</li>
+        <li>Per-session state management</li>
+      </ul>
+    </div>
+
+    <div class="card" id="c-python">
+      <div class="card-head">
+        <div class="card-icon">&#128013;</div>
+        <div>
+          <div class="card-name">Python 3.11+</div>
+          <div class="card-file">async runtime</div>
+        </div>
+      </div>
+      <ul class="card-features">
+        <li>async / await throughout</li>
+        <li>Async generators for streaming</li>
+        <li>asyncio.to_thread for LLM calls</li>
+        <li>python-dotenv for secrets</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ---- Col 2: Intelligence ---- -->
+  <div class="arch-col col-brain">
+    <div class="col-label">&#129504; Intelligence Layer</div>
+
+    <div class="card" id="c-agent">
+      <div class="card-head">
+        <div class="card-icon">&#129302;</div>
+        <div>
+          <div class="card-name">DataChatAgent</div>
+          <div class="card-file">agent.py</div>
+        </div>
+      </div>
+      <ul class="card-features">
+        <li>Gemini 2.0 Flash backbone</li>
+        <li>Google GenAI SDK (function calling)</li>
+        <li>Multi-turn conversation history</li>
+        <li>Up to 10 reasoning iterations</li>
+        <li>Async event-stream yields</li>
+        <li>Graceful error recovery</li>
+      </ul>
+    </div>
+
+    <div class="card" id="c-tools">
+      <div class="card-head">
+        <div class="card-icon">&#128295;</div>
+        <div>
+          <div class="card-name">4 Agent Tools</div>
+          <div class="card-file">function declarations</div>
+        </div>
+      </div>
+      <div class="tool-list">
+        <div class="tool"><span class="tool-n">1</span>list_loaded_files</div>
+        <div class="tool"><span class="tool-n">2</span>get_file_details</div>
+        <div class="tool"><span class="tool-n">3</span>run_data_query</div>
+        <div class="tool"><span class="tool-n">4</span>search_document</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- Col 3: File Engine ---- -->
+  <div class="arch-col col-file">
+    <div class="col-label">&#128194; File Engine</div>
+
+    <div class="card" id="c-processor">
+      <div class="card-head">
+        <div class="card-icon">&#9881;&#65039;</div>
+        <div>
+          <div class="card-name">FileProcessor</div>
+          <div class="card-file">file_processor.py</div>
+        </div>
+      </div>
+      <div class="fmt-row">
+        <span class="fmt fmt-csv">CSV</span>
+        <span class="fmt fmt-xlsx">XLSX</span>
+        <span class="fmt fmt-pdf">PDF</span>
+        <span class="fmt fmt-docx">DOCX</span>
+        <span class="fmt fmt-pptx">PPTX</span>
+      </div>
+      <ul class="card-features">
+        <li>Multi-sheet Excel parsing</li>
+        <li>PDF tables via pdfplumber</li>
+        <li>Word tables via python-docx</li>
+        <li>PPT slides + notes via python-pptx</li>
+        <li>Metadata extraction per format</li>
+      </ul>
+    </div>
+
+    <div class="card" id="c-store">
+      <div class="card-head">
+        <div class="card-icon">&#128190;</div>
+        <div>
+          <div class="card-name">DataStore</div>
+          <div class="card-file">data_store.py</div>
+        </div>
+      </div>
+      <ul class="card-features">
+        <li>Pickle persistence to disk</li>
+        <li>Auto-reload on session start</li>
+        <li>Safe Python variable naming</li>
+        <li>Multi-file DataFrame registry</li>
+        <li>Stored at data/uploads/</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ---- Col 4: Execution & Viz ---- -->
+  <div class="arch-col col-exec">
+    <div class="col-label">&#9889; Execution &amp; Viz</div>
+
+    <div class="card" id="c-executor">
+      <div class="card-head">
+        <div class="card-icon">&#128300;</div>
+        <div>
+          <div class="card-name">CodeExecutor</div>
+          <div class="card-file">code_executor.py</div>
+        </div>
+      </div>
+      <ul class="card-features">
+        <li>Restricted Python builtins sandbox</li>
+        <li>stdout capture via StringIO</li>
+        <li>pd &middot; np &middot; px &middot; go available</li>
+        <li>Plotly figure auto-detection</li>
+        <li>Full traceback on errors</li>
+      </ul>
+    </div>
+
+    <div class="card" id="c-plotly">
+      <div class="card-head">
+        <div class="card-icon">&#128202;</div>
+        <div>
+          <div class="card-name">Plotly</div>
+          <div class="card-file">Express + Graph Objects</div>
+        </div>
+      </div>
+      <ul class="card-features">
+        <li>Bar, Line, Scatter, Pie</li>
+        <li>Histogram, Box, Heatmap</li>
+        <li>Dark-mode chart templates</li>
+        <li>Rendered inline in chat bubble</li>
+        <li>Interactive zoom &amp; pan</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /arch-diagram -->
+
+<!-- ============================================================
+     QUERY JOURNEY
+     ============================================================ -->
+<section class="section">
+  <div class="section-title">Query Journey &mdash; Trace a Live Request</div>
+  <div class="steps-grid" id="steps-grid">
+
+    <div class="step" id="step-0" data-n="01">
+      <div class="step-tag">Upload</div>
+      <div class="step-title-text">File Attached</div>
+      <div class="step-desc">User drags factory_anomaly_data.csv onto the chat input.</div>
+      <div class="step-comp">Chainlit &rsaquo; on_message</div>
+    </div>
+
+    <div class="step" id="step-1" data-n="02">
+      <div class="step-tag">Ingest</div>
+      <div class="step-title-text">Parse &amp; Profile</div>
+      <div class="step-desc">FileProcessor reads CSV into a DataFrame, extracts columns &amp; dtypes.</div>
+      <div class="step-comp">file_processor.py &rsaquo; _csv()</div>
+    </div>
+
+    <div class="step" id="step-2" data-n="03">
+      <div class="step-tag">Persist</div>
+      <div class="step-title-text">Saved to Disk</div>
+      <div class="step-desc">DataStore pickles the FileData to data/uploads/ for future sessions.</div>
+      <div class="step-comp">data_store.py &rsaquo; add_file()</div>
+    </div>
+
+    <div class="step" id="step-3" data-n="04">
+      <div class="step-tag">Query</div>
+      <div class="step-title-text">User Asks</div>
+      <div class="step-desc">&ldquo;Check anomalies in this file&rdquo; sent to DataChatAgent with history.</div>
+      <div class="step-comp">app.py &rsaquo; agent.chat()</div>
+    </div>
+
+    <div class="step" id="step-4" data-n="05">
+      <div class="step-tag">Plan</div>
+      <div class="step-title-text">LLM Reasoning</div>
+      <div class="step-desc">Gemini receives query + 4 tool declarations. Chooses list_loaded_files first.</div>
+      <div class="step-comp">agent.py &rsaquo; Gemini API call</div>
+    </div>
+
+    <div class="step" id="step-5" data-n="06">
+      <div class="step-tag">Tool</div>
+      <div class="step-title-text">Inventory Check</div>
+      <div class="step-desc">list_loaded_files returns schema with var name &ldquo;factory_anomaly_data&rdquo;.</div>
+      <div class="step-comp">agent.py &rsaquo; _execute_tool()</div>
+    </div>
+
+    <div class="step" id="step-6" data-n="07">
+      <div class="step-tag">Code</div>
+      <div class="step-title-text">Code Generated</div>
+      <div class="step-desc">Gemini writes pandas code: Z-scores, IQR bounds, null analysis, anomaly flag.</div>
+      <div class="step-comp">Gemini &rsaquo; run_data_query call</div>
+    </div>
+
+    <div class="step" id="step-7" data-n="08">
+      <div class="step-tag">Execute</div>
+      <div class="step-title-text">Safe Execution</div>
+      <div class="step-desc">CodeExecutor runs the code in a restricted sandbox. Print output captured.</div>
+      <div class="step-comp">code_executor.py &rsaquo; execute_data_code()</div>
+    </div>
+
+    <div class="step" id="step-8" data-n="09">
+      <div class="step-tag">Chart</div>
+      <div class="step-title-text">Figure Detected</div>
+      <div class="step-desc">A Plotly scatter of anomalous points is found in namespace &amp; yielded to UI.</div>
+      <div class="step-comp">code_executor.py &rsaquo; figure scan</div>
+    </div>
+
+    <div class="step" id="step-9" data-n="10">
+      <div class="step-tag">Response</div>
+      <div class="step-title-text">Answer Delivered</div>
+      <div class="step-desc">Gemini synthesises all results into a caveated anomaly report. Chart renders inline.</div>
+      <div class="step-comp">Chainlit &rsaquo; Message + Plotly</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     TECH STACK
+     ============================================================ -->
+<section class="tech-box">
+  <div class="section-title">Technology Stack</div>
+  <div class="tech-grid">
+    <div class="tb"><span class="dot" style="background:#a78bfa"></span>Python 3.11+</div>
+    <div class="tb"><span class="dot" style="background:#e8572a"></span>Chainlit 2.x</div>
+    <div class="tb"><span class="dot" style="background:#4285f4"></span>Google Gemini 2.0 Flash</div>
+    <div class="tb"><span class="dot" style="background:#4285f4"></span>google-genai SDK</div>
+    <div class="tb"><span class="dot" style="background:#60a5fa"></span>pandas 2.x</div>
+    <div class="tb"><span class="dot" style="background:#f59e0b"></span>NumPy</div>
+    <div class="tb"><span class="dot" style="background:#636efa"></span>Plotly Express</div>
+    <div class="tb"><span class="dot" style="background:#636efa"></span>Plotly Graph Objects</div>
+    <div class="tb"><span class="dot" style="background:#e8572a"></span>pdfplumber</div>
+    <div class="tb"><span class="dot" style="background:#2e74b5"></span>python-docx</div>
+    <div class="tb"><span class="dot" style="background:#d24726"></span>python-pptx</div>
+    <div class="tb"><span class="dot" style="background:#34d399"></span>openpyxl</div>
+    <div class="tb"><span class="dot" style="background:#94a3b8"></span>python-dotenv</div>
+    <div class="tb"><span class="dot" style="background:#94a3b8"></span>psutil</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <p>
+    <strong style="color:var(--violet)">Pulse</strong> &mdash; Agentic Data Mesh
+    &nbsp;&middot;&nbsp;
+    Built with Chainlit &amp; Google Gemini
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/Cosmius-SK/agentic-data-mesh">github.com/Cosmius-SK/agentic-data-mesh</a>
+  </p>
+  <p style="margin-top:.5rem;font-size:.72rem">
+    Branch: <code style="color:var(--violet);font-family:var(--mono)">claude/data-chat-interface-3C88w</code>
+  </p>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+// ============================================================
+// Connection definitions  [fromId, toId, color, arrowId]
+// ============================================================
+const CONNS = [
+  ['c-chainlit','c-agent',    '#60a5fa','arr-b'],
+  ['c-agent',   'c-tools',   '#a78bfa','arr-v'],
+  ['c-tools',   'c-executor','#a78bfa','arr-v'],
+  ['c-chainlit','c-processor','#34d399','arr-e'],
+  ['c-processor','c-store',  '#34d399','arr-e'],
+  ['c-store',   'c-executor','#fbbf24','arr-a'],
+  ['c-executor','c-plotly',  '#fbbf24','arr-a'],
+  ['c-plotly',  'c-chainlit','#fbbf24','arr-a'],
+  ['c-agent',   'c-store',   '#a78bfa','arr-v'],
+];
+
+// Which cards light up at each step (0-9)
+const STEP_CARDS = [
+  ['c-chainlit'],
+  ['c-chainlit','c-processor'],
+  ['c-processor','c-store'],
+  ['c-chainlit','c-agent'],
+  ['c-agent'],
+  ['c-agent','c-tools','c-store'],
+  ['c-agent','c-tools'],
+  ['c-tools','c-executor'],
+  ['c-executor','c-plotly'],
+  ['c-agent','c-plotly','c-chainlit'],
+];
+
+// ============================================================
+// Draw SVG connections
+// ============================================================
+function drawConns() {
+  const svg  = document.getElementById('conn-svg');
+  const diag = document.getElementById('arch-diagram');
+  const dr   = diag.getBoundingClientRect();
+
+  // Resize SVG to match diagram
+  svg.setAttribute('width',  dr.width);
+  svg.setAttribute('height', dr.height);
+  svg.style.width  = dr.width  + 'px';
+  svg.style.height = dr.height + 'px';
+
+  // Remove old paths (keep defs)
+  [...svg.children].forEach(c => { if (c.tagName !== 'defs') svg.removeChild(c); });
+
+  CONNS.forEach(([fId, tId, color, arr], idx) => {
+    const fEl = document.getElementById(fId);
+    const tEl = document.getElementById(tId);
+    if (!fEl || !tEl) return;
+
+    const fr = fEl.getBoundingClientRect();
+    const tr = tEl.getBoundingClientRect();
+
+    // Center points relative to diagram
+    const x1 = fr.left + fr.width  / 2 - dr.left;
+    const y1 = fr.top  + fr.height / 2 - dr.top;
+    const x2 = tr.left + tr.width  / 2 - dr.left;
+    const y2 = tr.top  + tr.height / 2 - dr.top;
+
+    // Bezier: horizontal bias for cross-column, vertical for same-column
+    const dx = x2 - x1, dy = y2 - y1;
+    const cx1 = x1 + dx * .55;
+    const cy1 = y1;
+    const cx2 = x1 + dx * .45;
+    const cy2 = y2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width','1.5');
+    path.setAttribute('stroke-opacity','0.25');
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke-dasharray','5 5');
+    path.setAttribute('marker-end', `url(#${arr})`);
+    path.setAttribute('id', `p${idx}`);
+    path.style.transition = 'stroke-opacity .3s, stroke-width .3s';
+
+    // Flowing dash animation
+    const anim = document.createElementNS('http://www.w3.org/2000/svg','animateTransform');
+    // Use animate on stroke-dashoffset instead
+    const da = document.createElementNS('http://www.w3.org/2000/svg','animate');
+    da.setAttribute('attributeName','stroke-dashoffset');
+    da.setAttribute('from','10');
+    da.setAttribute('to','0');
+    da.setAttribute('dur','0.7s');
+    da.setAttribute('repeatCount','indefinite');
+    path.appendChild(da);
+
+    svg.appendChild(path);
+  });
+}
+
+// Highlight connections related to active cards
+function setConnOpacity(activeCards, reset) {
+  CONNS.forEach(([fId, tId], idx) => {
+    const p = document.getElementById('p'+idx);
+    if (!p) return;
+    if (reset) {
+      p.setAttribute('stroke-opacity','0.25');
+      p.setAttribute('stroke-width','1.5');
+    } else {
+      const on = activeCards.includes(fId) && activeCards.includes(tId);
+      p.setAttribute('stroke-opacity', on ? '0.9' : '0.08');
+      p.setAttribute('stroke-width', on ? '2.5' : '1');
+    }
+  });
+}
+
+// ============================================================
+// Card hover — highlight related connections
+// ============================================================
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    if (isPlaying) return;
+    CONNS.forEach(([fId,tId],idx) => {
+      const p = document.getElementById('p'+idx);
+      if (!p) return;
+      const rel = fId === card.id || tId === card.id;
+      p.setAttribute('stroke-opacity', rel ? '0.85' : '0.05');
+      p.setAttribute('stroke-width', rel ? '2.5' : '1');
+    });
+  });
+  card.addEventListener('mouseleave', () => {
+    if (!isPlaying) setConnOpacity([], true);
+  });
+});
+
+// ============================================================
+// Trace animation
+// ============================================================
+let isPlaying = false;
+let timer = null;
+let curStep = -1;
+
+function startTrace() {
+  if (isPlaying) { stopTrace(); return; }
+  isPlaying = true;
+  curStep   = -1;
+  document.getElementById('trace-btn').classList.add('playing');
+  document.getElementById('btn-icon').textContent  = '⏹';
+  document.getElementById('btn-label').textContent = 'Stop';
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active','done'));
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  advance();
+  timer = setInterval(advance, 1900);
+}
+
+function stopTrace() {
+  isPlaying = false;
+  clearInterval(timer);
+  document.getElementById('trace-btn').classList.remove('playing');
+  document.getElementById('btn-icon').textContent  = '▶';
+  document.getElementById('btn-label').textContent = 'Trace a Query';
+  document.getElementById('status-bar').innerHTML  = '';
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  setConnOpacity([], true);
+}
+
+function advance() {
+  curStep++;
+  if (curStep >= 10) {
+    stopTrace();
+    document.getElementById('status-bar').innerHTML =
+      '<span class="status-dot" style="background:#34d399"></span>'
+      + '&nbsp;Query complete &mdash; anomaly report delivered.';
+    document.querySelectorAll('.step').forEach(s => s.classList.add('done'));
+    return;
+  }
+
+  // Steps
+  if (curStep > 0) {
+    const prev = document.getElementById('step-'+(curStep-1));
+    if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+  }
+  const cur = document.getElementById('step-'+curStep);
+  if (cur) {
+    cur.classList.add('active');
+    cur.scrollIntoView({behavior:'smooth',block:'nearest'});
+    const t = cur.querySelector('.step-title-text');
+    document.getElementById('status-bar').innerHTML =
+      '<span class="status-dot"></span>&nbsp;'
+      + 'Step '+(curStep+1)+'/10 — ' + (t ? t.textContent : '');
+  }
+
+  // Cards
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  const active = STEP_CARDS[curStep] || [];
+  active.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+  });
+
+  // Connections
+  setConnOpacity(active, false);
+}
+
+// ============================================================
+// Init
+// ============================================================
+window.addEventListener('load', drawConns);
+window.addEventListener('resize', drawConns);
+</script>
+</body>
+</html>

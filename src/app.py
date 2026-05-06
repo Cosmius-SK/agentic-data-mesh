@@ -27,19 +27,25 @@ async def start():
         summary = store.get_context_summary()
         await cl.Message(
             content=(
-                f"## Data Chat  \n"
-                f"Welcome back! Loaded **{len(loaded)} persisted file(s)**:\n\n"
+                f"Welcome back.\n\n"
+                f"I have **{len(loaded)} file(s)** ready to analyse:\n\n"
                 f"{summary}\n\n"
-                f"Upload more files or ask me anything about your data."
+                f"Upload more files or ask me anything."
             )
         ).send()
     else:
+        starters = (
+            "\n\n**Try asking:**\n"
+            "- *\"What anomalies exist in this data?\"*\n"
+            "- *\"Show me a chart of sales by month\"*\n"
+            "- *\"Summarise the key findings from this report\"*\n"
+            "- *\"Are there any missing values?\"*"
+        )
         await cl.Message(
             content=(
-                "## Data Chat  \n"
-                "Upload one or more files and start chatting with your data.\n\n"
-                "**Supported formats:** CSV, Excel (.xlsx), PDF, Word (.docx), PowerPoint (.pptx)  \n"
-                "**How to start:** Attach a file to your message below, then ask a question."
+                "Hello. I'm **Pulse**, your AI data partner.\n\n"
+                "Attach a file — CSV, Excel, PDF, Word, or PowerPoint — and ask me anything about it."
+                + starters
             )
         ).send()
 

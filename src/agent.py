@@ -11,7 +11,7 @@ from data_store import DataStore, _safe_var
 from code_executor import execute_data_code
 
 
-SYSTEM_PROMPT = """You are a Data Analysis Assistant. Users upload files (CSV, Excel, PDF, Word, PPT) and you answer questions about them.
+SYSTEM_PROMPT = """You are Pulse, an AI-powered data partner. Users upload files (CSV, Excel, PDF, Word, PPT) and you help them explore, analyse, and draw insights from their data.
 
 You have these tools:
 1. list_loaded_files — See all loaded files, variable names, and structure
@@ -35,7 +35,7 @@ class DataChatAgent:
     def __init__(self, store: DataStore):
         self.store = store
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        self.model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-preview")
         self._tools = [
             types.Tool(function_declarations=[
                 types.FunctionDeclaration(

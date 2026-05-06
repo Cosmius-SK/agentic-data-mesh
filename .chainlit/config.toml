@@ -95,17 +95,19 @@ reaction_on_message_received = false
 
 [UI]
 # Name of the assistant.
-name = "Assistant"
+name = "Pulse"
 
-# default_theme = "dark"
+description = "Your AI-powered data partner — upload files, ask questions, get answers."
+
+default_theme = "dark"
 
 # Force a specific language for all users (e.g., "en-US", "he-IL", "fr-FR")
 # If not set, the browser's language will be used
 # language = "en-US"
 
-# layout = "wide"
+layout = "wide"
 
-# default_sidebar_state = "open"  # Options: "open", "closed", "hidden"
+default_sidebar_state = "closed"
 
 # Chat settings display location: "message_composer" (default) or "sidebar" (header)
 # chat_settings_location = "message_composer"
@@ -114,17 +116,17 @@ name = "Assistant"
 # default_chat_settings_open = false
 
 # Whether to prompt user confirmation on clicking 'New Chat'
-confirm_new_chat = true
+confirm_new_chat = false
 
 # Description of the assistant. This is used for HTML tags.
 # description = ""
 
 # Chain of Thought (CoT) display mode. Can be "hidden", "tool_call" or "full".
-cot = "full"
+cot = "tool_call"
 
 # Specify a CSS file that can be used to customize the user interface.
 # The CSS file can be served from the public directory or via an external link.
-# custom_css = "/public/test.css"
+custom_css = "/public/pulse.css"
 
 # Specify additional attributes for a custom CSS file
 # custom_css_attributes = "media=\"print\""

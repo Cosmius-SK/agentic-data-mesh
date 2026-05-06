@@ -1,0 +1,159 @@
+/* ─── Pulse — Claude-inspired theme ─────────────────────────────────────── */
+
+/* Inter font for clean, modern typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --background: #0d0d0d;
+  --surface: #171717;
+  --surface-raised: #1e1e1e;
+  --border: #2a2a2a;
+  --text-primary: #ececec;
+  --text-secondary: #a0a0a0;
+  --accent: #a78bfa;        /* violet — Pulse brand colour */
+  --accent-hover: #c4b5fd;
+  --user-bubble: #1a1a2e;
+  --assistant-bg: transparent;
+  --code-bg: #141414;
+  --radius: 12px;
+}
+
+/* Base */
+body, html { font-family: 'Inter', system-ui, sans-serif; }
+
+/* Main chat area */
+.cl-main { background: var(--background) !important; }
+
+/* Message bubbles ─────────────────────────────────── */
+
+/* User messages */
+.cl-user-message {
+  background: var(--user-bubble) !important;
+  border: 1px solid #2a2a4a !important;
+  border-radius: var(--radius) !important;
+  color: var(--text-primary) !important;
+  max-width: 80% !important;
+}
+
+/* Assistant messages */
+.cl-assistant-message {
+  background: var(--assistant-bg) !important;
+  border: none !important;
+  color: var(--text-primary) !important;
+  max-width: 90% !important;
+}
+
+/* Avatar */
+.cl-avatar {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa) !important;
+  border-radius: 50% !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* Input area ──────────────────────────────────────── */
+.cl-input-container, .cl-input-panel {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+}
+
+.cl-input-container:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.15) !important;
+}
+
+textarea, input[type="text"] {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+textarea::placeholder {
+  color: var(--text-secondary) !important;
+}
+
+/* Send button */
+button[type="submit"] {
+  background: var(--accent) !important;
+  border-radius: 8px !important;
+  color: white !important;
+}
+button[type="submit"]:hover {
+  background: var(--accent-hover) !important;
+}
+
+/* Sidebar ─────────────────────────────────────────── */
+.cl-sidebar {
+  background: var(--surface) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+/* Thread history items */
+.cl-thread-item:hover {
+  background: var(--surface-raised) !important;
+  border-radius: 8px !important;
+}
+.cl-thread-item.active {
+  background: #1e1830 !important;
+  border-left: 3px solid var(--accent) !important;
+}
+
+/* Steps / tool calls ──────────────────────────────── */
+.cl-step {
+  background: var(--surface-raised) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  font-size: 0.85rem !important;
+  color: var(--text-secondary) !important;
+}
+.cl-step-title { color: var(--accent) !important; font-weight: 500 !important; }
+
+/* Code blocks ─────────────────────────────────────── */
+pre, code {
+  background: var(--code-bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+}
+
+pre { padding: 1rem !important; }
+code { padding: 0.1em 0.35em !important; font-size: 0.875em !important; }
+
+/* Tables ──────────────────────────────────────────── */
+table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  font-size: 0.875rem !important;
+}
+th {
+  background: var(--surface-raised) !important;
+  color: var(--accent) !important;
+  padding: 0.6rem 1rem !important;
+  text-align: left !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+td {
+  padding: 0.5rem 1rem !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-primary) !important;
+}
+tr:last-child td { border-bottom: none !important; }
+tr:hover td { background: var(--surface-raised) !important; }
+
+/* Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--background); }
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* Welcome screen ──────────────────────────────────── */
+.cl-welcome-screen {
+  background: var(--background) !important;
+}
+
+/* Plotly chart container */
+.cl-plotly { border-radius: var(--radius) !important; overflow: hidden !important; }

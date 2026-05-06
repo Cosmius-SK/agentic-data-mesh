@@ -1,6 +1,9 @@
 .env
 __pycache__/
 *.pyc
+*.pyo
 .venv/
+venv/
+data/uploads/
 # Optional: Ignore maintenance reports if you want a clean repo
 # pulse_report_*.md

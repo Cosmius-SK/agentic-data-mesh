@@ -18,6 +18,11 @@ _SAFE_BUILTINS = {
     'True': True, 'False': False, 'None': None,
 }
 
+# Hard cap on printed output sent back to the LLM.
+# Large datasets can print millions of characters — that confuses the model.
+_MAX_OUTPUT_CHARS = 4000
+_MAX_OUTPUT_LINES = 60
+
 
 def execute_data_code(
     code: str,
@@ -47,7 +52,8 @@ def execute_data_code(
     except Exception:
         return f"```\n{traceback.format_exc()}\n```", None
 
-    output = buf.getvalue().strip()
+    raw_output = buf.getvalue().strip()
+    output = _truncate_output(raw_output)
 
     # Find first plotly Figure created in the namespace
     figure: Optional[go.Figure] = next(
@@ -64,3 +70,23 @@ def execute_data_code(
         output = "Code executed (no printed output)."
 
     return output, figure
+
+
+def _truncate_output(text: str) -> str:
+    if not text:
+        return text
+    lines = text.split('\n')
+    if len(lines) > _MAX_OUTPUT_LINES:
+        kept = '\n'.join(lines[:_MAX_OUTPUT_LINES])
+        note = (
+            f"\n\n[Output truncated: showed {_MAX_OUTPUT_LINES} of {len(lines)} lines. "
+            "Use aggregation (.groupby, .describe, .value_counts) to summarise large results.]"
+        )
+        return kept + note
+    if len(text) > _MAX_OUTPUT_CHARS:
+        note = (
+            f"\n\n[Output truncated at {_MAX_OUTPUT_CHARS} chars. "
+            "Use .head(), .describe(), or aggregation for concise results.]"
+        )
+        return text[:_MAX_OUTPUT_CHARS] + note
+    return text
